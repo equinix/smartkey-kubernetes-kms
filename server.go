@@ -1,8 +1,3 @@
-// Copyright (c) Microsoft and contributors.  All rights reserved.
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
-
 package main
 
 import (
@@ -23,9 +18,9 @@ import (
 )
 
 const (
-	// Unix Domain Socket
+	/* Unix Domain Socket */
 	netProtocol      = "unix"
-	socketPath       = "/opt/smartkey.socket"
+	socketPath       = "/etc/ssl/certs/smartkey.socket"
 	version          = "v1beta1"
 	runtime          = "Equinix SmartKey"
 	runtimeVersion   = "0.0.1"
@@ -38,7 +33,7 @@ type CommandArgs struct {
 	smartkeyConfig           string
 }
 
-// KeyManagementServiceServer is a gRPC server.
+/* KeyManagementServiceServer is a gRPC server. */
 type KeyManagementServiceServer struct {
 	*grpc.Server
 	pathToUnixSocket   string
@@ -58,6 +53,7 @@ func New(pathToUnixSocketFile string, configFilePath string) (*KeyManagementServ
 	return keyManagementServiceServer, nil
 }
 
+/* This is a function to parse command line parameters. */
 func parseCmd() CommandArgs {
 	socketFile := flag.String("socketFile", "", "socket file that gRpc server listens to")
 	smartkeyConfig := flag.String("smartkeyConfig", "", "smartkey config file location")
@@ -79,6 +75,7 @@ func parseCmd() CommandArgs {
 	return cmdArgs
 }
 
+/* This the main function. */
 func main() {
 	/* Parse command line arguments */
 	cmdArgs := parseCmd()
@@ -139,14 +136,16 @@ func (s *KeyManagementServiceServer) Encrypt(ctx context.Context, request *k8spb
 
 	log.Println("Processing EncryptRequest: ")
 
-	return &k8spb.EncryptResponse{Cipher: request.Plain}, nil
+	var cihper = []byte(encrypt(string(request.Plain)))
+	return &k8spb.EncryptResponse{Cipher: cihper}, nil
 }
 
 func (s *KeyManagementServiceServer) Decrypt(ctx context.Context, request *k8spb.DecryptRequest) (*k8spb.DecryptResponse, error) {
 
 	log.Println("Processing DecryptRequest: ")
 
-	return &k8spb.DecryptResponse{Plain: request.Cipher}, nil
+	var plain = []byte(decrypt(string(request.Cipher)))
+	return &k8spb.DecryptResponse{Plain: plain}, nil
 }
 
 func (s *KeyManagementServiceServer) cleanSockFile() error {
