@@ -196,8 +196,8 @@ func (s *KeyManagementServiceServer) Encrypt(ctx context.Context, request *k8spb
 
 	log.Println("Processing EncryptRequest: ")
 
-	response, _ := encrypt(s.config, string(request.Plain))
-	return &k8spb.EncryptResponse{Cipher: []byte(response)}, nil
+	response, err := encrypt(s.config, string(request.Plain))
+	return &k8spb.EncryptResponse{Cipher: []byte(response)}, err
 }
 
 /*Decrypt function returns decrypted data. */
@@ -205,8 +205,8 @@ func (s *KeyManagementServiceServer) Decrypt(ctx context.Context, request *k8spb
 
 	log.Println("Processing DecryptRequest: ")
 
-	response, _ := decrypt(s.config, string(request.Cipher))
-	return &k8spb.DecryptResponse{Plain: []byte(response)}, nil
+	response, err := decrypt(s.config, string(request.Cipher))
+	return &k8spb.DecryptResponse{Plain: []byte(response)}, err
 }
 
 /*cleanSockFile function cleans the unix socker created for the gRPC server. */
