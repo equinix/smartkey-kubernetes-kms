@@ -20,9 +20,7 @@ import (
 
 const (
 	/* Unix Domain Socket */
-	netProtocol = "unix"
-	//	socketPath      = "/etc/ssl/certs/smartkey.socket"
-	//	smartkeyURL     = "https://smartkey.io"
+	netProtocol     = "unix"
 	version         = "v1beta1"
 	runtime         = "Equinix SmartKey"
 	runtimeVersion  = "0.0.1"
@@ -64,11 +62,9 @@ func parseCmd() (CommandArgs, error) {
 
 	if len(*socketFile) == 0 {
 		return cmdArgs, errors.New("socketFile parameter not specified")
-		//log.Fatal("socketFile parameter not specified")
 	}
 
 	if len(*configFile) == 0 {
-		//log.Fatal("configFile parameter not specified")
 		return cmdArgs, errors.New("configFile parameter not specified")
 	}
 
@@ -84,13 +80,11 @@ func parseConfigFile(configFilePath string) (map[string]string, error) {
 	file, err := os.Open(configFilePath)
 	var config map[string]string
 	if err != nil {
-		//log.Fatal("Unable to open config file", err)
 		return nil, errors.New("Unable to open config file " + configFilePath)
 	}
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
-		//log.Fatal("Unable to parse config file:", err)
 		return nil, errors.New("Unable to parse config file " + configFilePath)
 	}
 
@@ -102,27 +96,22 @@ func parseConfigFile(configFilePath string) (map[string]string, error) {
 
 	/* check mandatory fields are define in config file */
 	if isAPIKeyPresent == false {
-		//log.Fatal("property 'smartkeyApiKey' missing in config file")
 		return nil, errors.New("property 'smartkeyApiKey' missing in config file " + configFilePath)
 	}
 
 	if isEnckeyUUIDPresent == false {
 		return nil, errors.New("property 'encryptionKeyUuid' missing in config file " + configFilePath)
-		//log.Fatal("property 'encryptionKeyUuid' missing in config file")
 	}
 
 	if isIvPresent == false {
-		//log.Fatal("property 'isIvPresent' missing in config file")
 		return nil, errors.New("property 'isIvPresent' missing in config file " + configFilePath)
 	}
 
 	if issocketFilePresent == false {
-		//log.Fatal("property 'socketFile' missing in config file")
 		return nil, errors.New("property 'socketFile' missing in config file " + configFilePath)
 	}
 
 	if issmartkeyURLPresent == false {
-		//log.Fatal("property 'smartkeyURL' missing in config file")
 		return nil, errors.New("property 'smartkeyURL' missing in config file " + configFilePath)
 	}
 	/* end of check mandatory fields are define in config file */

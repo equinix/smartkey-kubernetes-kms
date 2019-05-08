@@ -157,23 +157,3 @@ func TestParseConfigFile_Negative_SmartkeyURLMissing(t *testing.T) {
 		t.Error("Test case should fail as [smartkeyURL] is missing")
 	}
 }
-
-// func TestEncrypt(t *testing.T) {
-
-// 	config := make(map[string]string)
-// 	serv, err := New("/path/to/sock/file", config)
-
-// 	serv.Encrypt(nil, nil)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// }
-
-// func TestParseCmd(t *testing.T) {
-// 	typeFlag = "text"
-// 	flag.String("socketFile1", "/sock/file/path", "socket file that gRpc server listens to")
-// 	flag.String("config1", "config file path", "config file location")
-// 	//flag.Var(&typeFlag, "f", usage+" (shorthand)")
-// 	_, err := parseCmd()
-// 	log.Fatal(err)
-// }
