@@ -9,12 +9,14 @@ import (
 	"net/http"
 )
 
+/*EncryptResponse response from SmartKey for encrypt API Call*/
 type EncryptResponse struct {
 	Kid    string
 	Cipher string
 	Iv     string
 }
 
+/*DecryptResponse response from SmartKey for decrypt API Call*/
 type DecryptResponse struct {
 	Kid   string
 	Plain string
@@ -47,11 +49,11 @@ func execute(apikey string, url string, data []byte) ([]byte, error) {
 }
 
 /* This is a method for calling encryption operation. */
-func encrypt(config map[string]string, input string) string {
+func encrypt(config map[string]string, input string) (string, error) {
 	/* Convert plain text to base64 */
 	var base64Input = base64.StdEncoding.EncodeToString([]byte(input))
 	encryptURL := config["smartkeyURL"] + "/crypto/v1/keys/" + config["encryptionKeyUuid"] + "/encrypt"
-	log.Println("encrypt: map: %v", config)
+	log.Println("encrypt: map:", config)
 	log.Println("encrypt: encryptURL:", encryptURL)
 	/* Call SmartKey encrypt */
 	var body, err = execute(config["smartkeyApiKey"], encryptURL, []byte(`{
@@ -62,18 +64,19 @@ func encrypt(config map[string]string, input string) string {
 	}`))
 
 	if err != nil {
-		log.Fatal("Error reading body. ", err)
+		log.Print("Error reading body. ", err)
+		return "", err
 	}
 
 	var response EncryptResponse
 	json.Unmarshal([]byte(body), &response)
 
-	return response.Cipher
+	return response.Cipher, nil
 }
 
 /* This is a method for calling decryption operation. */
-func decrypt(config map[string]string, cipher string) string {
-	decryptURL := config["smartkeyURL"] + "/crypto/v1/keys/" + config["encryptionKeyUuid"] + "/decryptURL"
+func decrypt(config map[string]string, cipher string) (string, error) {
+	decryptURL := config["smartkeyURL"] + "/crypto/v1/keys/" + config["encryptionKeyUuid"] + "/decrypt"
 	var body, err = execute(config["smartkeyApiKey"], decryptURL, []byte(`{
 		"alg":   "AES",
 		"mode":  "CBC",
@@ -82,7 +85,8 @@ func decrypt(config map[string]string, cipher string) string {
 	}`))
 
 	if err != nil {
-		log.Fatal("Error reading body. ", err)
+		log.Print("Error reading body. ", err)
+		return "", err
 	}
 
 	var response DecryptResponse
@@ -90,5 +94,5 @@ func decrypt(config map[string]string, cipher string) string {
 
 	var base64Input, _ = base64.StdEncoding.DecodeString(response.Plain)
 
-	return string(base64Input)
+	return string(base64Input), nil
 }
