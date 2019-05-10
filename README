@@ -41,13 +41,32 @@ This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link]
     - sudo service smartkey-grpc start
 
 # Configure api-server to use "SmartKey Kubernetes KMS Plugin"
-    - Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file
+Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file and add below configuration. You can find sample "smartkey.yaml" file in projects config folder. 
+      The installer will automatically create one and copy to the desired (/etc/smartkey/) location for you with prepopulated configuration.
+
     - spec.containers.command.kube-apiserver
         --encryption-provider-config=/etc/ssl/certs/smartkey.yaml
-    - You can find sample "smartkey.yaml" file in projects config folder. 
-      However, installer will automatically create one and copy to desired location for you.
-    - Save "kube-apiserver.yaml" and exit.
-    - Apiserver will detect changes in "kube-apiserver.yaml" file and restart.
+
+    Add "volumemount" and "volume host path" to kube-apiserver.yaml. 
+    Without below configuration, api-server won't be able to read smartkey.yaml and smartkey.sock files.
+
+
+    =====
+    volumeMounts:
+       - mountPath: /etc/smartkey
+           name: smartkey-kms
+           readOnly: true
+    ...
+    ...
+    volumes:
+       - hostPath:
+           path: /etc/smartkey
+           type: DirectoryOrCreate
+    ====
+    **Installer will not add above configurations and need to be added manually.
+
+
+Save "kube-apiserver.yaml" and exit. Apiserver will detect changes in "kube-apiserver.yaml" file and restart.
     
  # Verify if plugin is configured correctly
     - Create new secret and you should be able to see logs in plugin service logs. 

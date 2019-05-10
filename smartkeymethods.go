@@ -55,6 +55,7 @@ func encrypt(config map[string]string, input string) (string, error) {
 	encryptURL := config["smartkeyURL"] + "/crypto/v1/keys/" + config["encryptionKeyUuid"] + "/encrypt"
 	log.Println("encrypt: map:", config)
 	log.Println("encrypt: encryptURL:", encryptURL)
+
 	/* Call SmartKey encrypt */
 	var body, err = execute(config["smartkeyApiKey"], encryptURL, []byte(`{
 		"alg":   "AES",
@@ -77,6 +78,10 @@ func encrypt(config map[string]string, input string) (string, error) {
 /* This is a method for calling decryption operation. */
 func decrypt(config map[string]string, cipher string) (string, error) {
 	decryptURL := config["smartkeyURL"] + "/crypto/v1/keys/" + config["encryptionKeyUuid"] + "/decrypt"
+	log.Println("decrypt: map:", config)
+	log.Println("decrypt: encryptURL:", decryptURL)
+
+	/* Call SmartKey decrypt */
 	var body, err = execute(config["smartkeyApiKey"], decryptURL, []byte(`{
 		"alg":   "AES",
 		"mode":  "CBC",
