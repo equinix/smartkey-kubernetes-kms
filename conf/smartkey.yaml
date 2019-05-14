@@ -6,7 +6,7 @@ resources:
     providers:
     - kms:
         name: smartkey-test
-        endpoint: unix:///opt/smartkey.socket
+        endpoint: unix:///etc/smartkey/smartkey.socket
         cachesize: 100
         timeout: 3s
     - identity: {}

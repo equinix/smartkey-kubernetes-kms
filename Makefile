@@ -5,6 +5,9 @@ all: smartkey-kms
 
 smartkey-kms: build
 
+test:
+	go test -v
+
 build:
 	go build -o $(BINARY_NAME) -v
 
