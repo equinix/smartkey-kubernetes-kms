@@ -9,7 +9,7 @@
 	  "smartkeyURL": "<smartkey-url>"
 	}
 
-### Getting Started (Developer) ####
+### Getting Started (Developer)
 Prerequisite:
 1. Steps need to be executed in Kubernetecs cluster
 2. GoLang must be installed
@@ -39,7 +39,7 @@ Take checkout of current project.
     - sudo apt-get install devscripts build-essential lintian
  - Execute script "create_installer.sh". It will create deb file in one level above your PWD
 
-### Installation ####
+### Installation
 # Installing and configuring Plugin from Debian installer
   - Execute below command to install package
     - sudo dpkg -i smartkey-kmsplugin_1.0-1_amd64.deb
