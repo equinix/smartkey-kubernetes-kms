@@ -15,7 +15,7 @@ import (
 	"golang.org/x/net/trace"
 	"google.golang.org/grpc"
 
-	k8spb "smartkey/v1beta1"
+	k8spb "./v1beta1"
 )
 
 const (
