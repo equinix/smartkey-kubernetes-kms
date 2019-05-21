@@ -1,8 +1,24 @@
 # SmartKey Kubernetes KMS Plugin
 
-This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link](https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/) to understand how kubernetes work with external KMS.
+# Sample "smartkey-grpc.conf" file
+    {
+      "smartkeyApiKey": "<smartkey-api-key>",
+	  "encryptionKeyUuid": "<uuid-for-aes-encryption-key-in-SmartKey>",
+	  "iv": "<Initialization vector for your AES algo as per your key size (128, 192, 256)>",
+	  "socketFile": "<path-to-your-sock-file>",
+	  "smartkeyURL": "<smartkey-url>"
+	}
 
-# Command to test/build/clean project
+### Getting Started (Developer)
+Prerequisite:
+1. Steps need to be executed in Kubernetecs cluster
+2. GoLang must be installed
+3. Git pull this project
+
+This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link](https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/) to understand how kubernetes work with external KMS.
+Take checkout of current project.
+
+# Command to test, build or clean project (from inside project). This is only for developers who want to build binary of grpc server manually.
     - Run below command to test code
         $ make test
     - Run below command to build code
@@ -10,42 +26,36 @@ This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link]
     - Run below command to clean workspace
         $ make clean
 
-# Build command will generate smartkey-kms binary
+# Build command will generate smartkey-kms binary (only for developers who want to run gRPC server directly without using installer created in next steps).
   - Execute below command to run binary. In next sections we will see how we can create installer and use that to run plugin.
+    - make build (to build your code and get smartkey-kms)
     - sudo ./smartkey-kms --socketFile <sock-file-path> --config <config-file->
         - sock-file-path:  Path where you want to create your unix socket file eg: /etc/ssl/certs/smartkey.socket
         - config-file: Path to your config file. eg: conf/smartkey-grpc.conf
-
-# Sample "smartkey-grpc.conf" file
-    {
-      "smartkeyApiKey": "<smartkey-api-key>",
-	  "encryptionKeyUuid": "<uuid-for-aes-encryption-key-in-SmartKey>",
-	  "iv": "<Initialization vector for your AES algo>",
-	  "socketFile": "<path-to-your-sock-file>",
-	  "smartkeyURL": "<smartkey-url>"
-	}
 
 # Creating Debian installer from plugin binary
   - Install below tools
     - sudo apt-get install dh-make
     - sudo apt-get install devscripts build-essential lintian
  - Execute script "create_installer.sh". It will create deb file in one level above your PWD
- 
+
+### Installation
 # Installing and configuring Plugin from Debian installer
   - Execute below command to install package
     - sudo dpkg -i smartkey-kmsplugin_1.0-1_amd64.deb
   - Above command only install plugin binary in your machine but don't start it.
   - *We need to do configure our config files before starting service.
   - Update configuration at "/etc/smartkey/smartkey-grpc.conf". Refer above section for more details.
-  - Execute below command to run plugin gRPC server
+  - Execute below command to run plugin gRPC server 
     - sudo service smartkey-grpc start
 
 # Configure api-server to use "SmartKey Kubernetes KMS Plugin"
-Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file and add below configuration. You can find sample "smartkey.yaml" file in projects config folder. 
-      The installer will automatically create one and copy to the desired (/etc/smartkey/) location for you with prepopulated configuration.
+Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file and add below configuration.
 
     - spec.containers.command.kube-apiserver
-        --encryption-provider-config=/etc/ssl/certs/smartkey.yaml
+        --encryption-provider-config=/etc/smartkey/smartkey.yaml
+
+    The installer will automatically create "smartkey.yaml" and copy to the desired (/etc/smartkey/) location for you with prepopulated configuration.
 
     Add "volumemount" and "volume host path" to kube-apiserver.yaml. 
     Without below configuration, api-server won't be able to read smartkey.yaml and smartkey.sock files.
