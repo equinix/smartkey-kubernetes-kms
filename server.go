@@ -23,7 +23,7 @@ const (
 	netProtocol     = "unix"
 	version         = "v1beta1"
 	runtime         = "Equinix SmartKey"
-	runtimeVersion  = "0.0.1"
+	runtimeVersion  = "0.1.0"
 	maxRetryTimeout = 60
 	retryIncrement  = 5
 )
@@ -188,7 +188,7 @@ func main() {
 func (s *KeyManagementServiceServer) Version(ctx context.Context, request *k8spb.VersionRequest) (*k8spb.VersionResponse, error) {
 	log.Println(version)
 
-	return &k8spb.VersionResponse{Version: "v1beta1", RuntimeName: "vault", RuntimeVersion: "0.1.0"}, nil
+	return &k8spb.VersionResponse{Version: version, RuntimeName: "vault", RuntimeVersion: runtimeVersion}, nil
 }
 
 /*Encrypt function returns encrypted data. */
