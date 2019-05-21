@@ -108,6 +108,9 @@ Save "kube-apiserver.yaml" and exit. Apiserver will detect changes in "kube-apis
             $ sudo chown $(id -u):$(id -g) $HOME/.kube/config 
             Add change permissions on $HOME/.kube/ directory.
                 $ sudo chown $(id -u):$(id -g) $HOME/.kube/
+    2. For error "go get: no install location for directory" execute below commands.
+        export GOBIN=$HOME/work/bin
+        export GOPATH=$HOME/go
 
 ## Support email
     ES-ENG-SECURITY <ES-ENG-SECURITY@equinix.com>
