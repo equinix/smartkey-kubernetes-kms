@@ -1,6 +1,16 @@
 # SmartKey Kubernetes KMS Plugin
 
-# Sample "smartkey-grpc.conf" file
+
+Prerequisite:
+1. GoLang must be installed in server you want to build project/create installer (no required for running installer directly).
+2. We need existing Kubernetecs cluster to configure and run "SmartKey Kubernetes KMS Plugin".
+3. To build/run code or create installer, git pull this project inside your go directory (eg: ~/go/src/smartkey/)
+
+
+This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link](https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/) to understand how kubernetes work with external KMS.
+
+
+#### Sample "smartkey-grpc.conf" file
     {
       "smartkeyApiKey": "<smartkey-api-key>",
 	  "encryptionKeyUuid": "<uuid-for-aes-encryption-key-in-SmartKey>",
@@ -10,15 +20,11 @@
 	}
 
 ### Getting Started (Developer)
-Prerequisite:
-1. Steps need to be executed in Kubernetecs cluster
-2. GoLang must be installed
-3. Git pull this project
-
-This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link](https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/) to understand how kubernetes work with external KMS.
 Take checkout of current project.
 
-# Command to test, build or clean project (from inside project). This is only for developers who want to build binary of grpc server manually.
+##### Command to test, build or clean project (from inside project). 
+This is only for developers who want to build binary of grpc server manually or execute unit test cases.
+
     - Run below command to test code
         $ make test
     - Run below command to build code
@@ -26,21 +32,24 @@ Take checkout of current project.
     - Run below command to clean workspace
         $ make clean
 
-# Build command will generate smartkey-kms binary (only for developers who want to run gRPC server directly without using installer created in next steps).
+##### Build command will generate smartkey-kms binary 
+Below steps are for developers who want to run gRPC server directly without using installer (explained later in documentation).
   - Execute below command to run binary. In next sections we will see how we can create installer and use that to run plugin.
     - make build (to build your code and get smartkey-kms)
     - sudo ./smartkey-kms --socketFile <sock-file-path> --config <config-file->
-        - sock-file-path:  Path where you want to create your unix socket file eg: /etc/ssl/certs/smartkey.socket
+        - sock-file-path:  Path where you want to create your unix socket file eg: /etc/smartkey/smartkey.socket
         - config-file: Path to your config file. eg: conf/smartkey-grpc.conf
 
-# Creating Debian installer from plugin binary
+### Creating Debian installer from plugin binary
   - Install below tools
     - sudo apt-get install dh-make
     - sudo apt-get install devscripts build-essential lintian
  - Execute script "create_installer.sh". It will create deb file in one level above your PWD
 
-### Installation
-# Installing and configuring Plugin from Debian installer
+## Installation
+Instead of manually building code (as mentioned in Getting started 'Developer' section), we can directly install plugin using precomplied .deb file created in previous step "Creating Debian installer from plugin binary".
+
+#### Installing and configuring Plugin from Debian installer
   - Execute below command to install package
     - sudo dpkg -i smartkey-kmsplugin_1.0-1_amd64.deb
   - Above command only install plugin binary in your machine but don't start it.
@@ -49,7 +58,9 @@ Take checkout of current project.
   - Execute below command to run plugin gRPC server 
     - sudo service smartkey-grpc start
 
-# Configure api-server to use "SmartKey Kubernetes KMS Plugin"
+## Configure api-server to use "SmartKey Kubernetes KMS Plugin"
+For both, 1) running plugin manually or 2) using installer and "smartkey-grpc" service created by installer to run it, we need to perform below steps.
+
 Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file and add below configuration.
 
     - spec.containers.command.kube-apiserver
@@ -78,7 +89,7 @@ Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file and add below configur
 
 Save "kube-apiserver.yaml" and exit. Apiserver will detect changes in "kube-apiserver.yaml" file and restart.
     
- # Verify if plugin is configured correctly
+ ## Verify if plugin is configured correctly
     - Create new secret and you should be able to see logs in plugin service logs. 
     - User below command to see logs
         -   journalctl -xe
@@ -87,7 +98,7 @@ Save "kube-apiserver.yaml" and exit. Apiserver will detect changes in "kube-apis
     - Command to encrypt all of your existing secrets.
         -   kubectl get secrets --all-namespaces -o json | kubectl replace -f -
     
-# Troubleshooting
+## Troubleshooting
     1. Permission denied error while trying to encrypt old secrets using below command
         Create new secret and you should be able to see logs in plugin service logs. 
         $ kubectl get secrets --all-namespaces -o json | kubectl replace -f -
@@ -98,5 +109,5 @@ Save "kube-apiserver.yaml" and exit. Apiserver will detect changes in "kube-apis
             Add change permissions on $HOME/.kube/ directory.
                 $ sudo chown $(id -u):$(id -g) $HOME/.kube/
 
-# Support email
+## Support email
     ES-ENG-SECURITY <ES-ENG-SECURITY@equinix.com>
