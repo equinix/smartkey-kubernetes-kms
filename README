@@ -113,6 +113,8 @@ Save "kube-apiserver.yaml" and exit. Apiserver will detect changes in "kube-apis
     2. For error "go get: no install location for directory" execute below commands.
         export GOBIN=$HOME/work/bin
         export GOPATH=$HOME/go
+    3. In order to uninstall debian package use below command.
+        sudo dpkg -P smartkey-kmsplugin
 
 ## Support email
     ES-ENG-SECURITY <ES-ENG-SECURITY@equinix.com>
