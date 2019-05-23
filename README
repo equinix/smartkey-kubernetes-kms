@@ -59,7 +59,7 @@ Instead of manually building code (as mentioned in Getting started 'Developer' s
   - Execute below command to run plugin gRPC server 
     - sudo service smartkey-grpc start &
   - Verify if service started correctly using below command
-    - sudo systemctl status smartkey-grpc
+    - sudo service smartkey-grpc status
 
 ## Configure api-server to use "SmartKey Kubernetes KMS Plugin"
 For both, 1) running plugin manually or 2) using installer and "smartkey-grpc" service created by installer to run it, we need to perform below steps.
