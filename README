@@ -2,12 +2,12 @@
 
 
 Prerequisite:
-1. GoLang must be installed in server you want to build project/create installer (no required for running installer directly).
-2. We need existing Kubernetecs cluster to configure and run "SmartKey Kubernetes KMS Plugin".
+1. GoLang must be installed in server you want to build project/create installer (not required for running installer directly).
+2. We need existing Kubernetes cluster to configure and run "SmartKey Kubernetes KMS Plugin".
 3. To build/run code or create installer, git pull this project inside your go directory (eg: ~/go/src/)
 
 
-This project allow to use SmartKey as KMS provider for kubernetecs. Refer [link](https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/) to understand how kubernetes work with external KMS.
+This project allow to use SmartKey as KMS provider for Kubernetes. Refer [link](https://kubernetes.io/docs/tasks/administer-cluster/kms-provider/) to understand how kubernetes work with external KMS.
 
 
 #### Sample "smartkey-grpc.conf" file
@@ -84,6 +84,7 @@ Open "/etc/kubernetes/manifests/kube-apiserver.yaml" file and add below configur
        - hostPath:
            path: /etc/smartkey
            type: DirectoryOrCreate
+         name: smartkey-kms
     ====
     **Installer will not add above configurations and need to be added manually.
 
