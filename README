@@ -39,7 +39,7 @@ Below steps are for developers who want to run gRPC server directly without usin
     - sudo ./smartkey-kms --socketFile <sock-file-path> --config <config-file->
         - sock-file-path:  Path where you want to create your unix socket file eg: /etc/smartkey/smartkey.socket
         - config-file: Path to your config file. eg: conf/smartkey-grpc.conf
-        - Note: path mentioned above (eg /etc/smartkey) should exist. If not, please create before running server.
+        - Note: "sock-file-path" should exist(eg /etc/smartkey). If not, please create before running server.
 
 ### Creating Debian installer from plugin binary
   - Install below tools
