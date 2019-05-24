@@ -1,0 +1,6 @@
+### Automation Tests for SmartKey KMS Plugin
+
+Defined the environment configuration in the master_config.property file
+or clone a new file (for example: "config.properties) and defined custom configuration there. 
+
+ENV and SERVER property can be set from command line argument (Example: java SmartKeyPlugin.class -DENV=prod -DSERVER=master)
