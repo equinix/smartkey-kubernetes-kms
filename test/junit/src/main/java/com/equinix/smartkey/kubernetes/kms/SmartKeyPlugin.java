@@ -114,6 +114,28 @@ public class SmartKeyPlugin {
 		assertTrue("smartkey-kms is not started", output.contains("KeyManagementServiceServer service started successfully."));
 	}
 	
+	@Test
+	public void _2_BugInvalidAPIKey() throws Exception {
+		sshServer.shellCommand("sudo rm -rf /etc/smartkey"); //remove old directory
+		sshServer.shellCommand("sudo mkdir -p /etc/smartkey");
+		sshServer.shellCommand("cd " + project_dir);
+		sshServer.shellCommand("rm -f smartkey-kms");
+		sshServer.shellCommand("make build"); //create smartkey-kms file
+		
+		Integer status = sshServer.execCommand(false, "sudo tee " + config_file + " <<EOF\n{\n" + 
+				" \"smartkeyApiKey\": \"WRONG_API_KEY\",\n" + 
+				" \"encryptionKeyUuid\": \"WRONG_UUID\",\n" + 
+				" \"iv\": \"WRONG_UUID\",\n" + 
+				" \"socketFile\": \"/etc/smartkey/smartkey.socket\",\n" + 
+				" \"smartkeyURL\": \"https://smartkey.io\"\n" + 
+				"}\nEOF").getKey();
+	    assertTrue("Cannot update " + config_file, status == 0);
+	    
+		String output = sshServer.shellCommand("sudo ./smartkey-kms --socketFile " + socket_file + " --config " + config_file);
+		assertTrue("smartkey-kms should failed on start", !output.contains("KeyManagementServiceServer service started successfully."));
+	}
+	
+	
 	/**
 	 * Creating Debian installer from plugin binary
 	 */
@@ -146,7 +168,7 @@ public class SmartKeyPlugin {
 	@Test
 	public void _4_TestPluginInstallation() throws Exception {
 		//Uninstall old plugin (if already installed)
-		sshServer.execCommand("sudo dpkg -P smartkey-kmsplugin");
+		sshServer.execCommand("sudo dpkg -P smartkey-kmsplugin"); 
 		
 		//Verify all files are removed (should return error code in terminal)
 		Integer status = sshServer.execCommand(false, "ls /usr/bin/smartkey-kms").getKey();
@@ -158,13 +180,15 @@ public class SmartKeyPlugin {
 		status = sshServer.execCommand(false, "ls /etc/smartkey/smartkey.yaml").getKey();
 		assertTrue("File exists: /etc/smartkey/smartkey.yaml", status == 2);
 		
-		//Reset kubernetes configuration
-		sshServer.execCommand("sudo kubeadm reset -f"); //Should delete /etc/kubernetes/manifests/kube-apiserver.yaml
+		sshServer.execCommand("sudo kubeadm reset -f"); //Should delete /etc/kubernetes/manifests/kube-apiserver.yaml (like format)
 		
+		//Check if all files removed
 		status = sshServer.execCommand(false, "ls /etc/kubernetes/manifests/kube-apiserver.yaml").getKey();
 		assertTrue("File exists: /etc/kubernetes/manifests/kube-apiserver.yaml", status == 2);
 		
+		// Reinstall
 		sshServer.execCommand("sudo kubeadm init"); //create /etc/kubernetes/manifests/kube-apiserver.yaml
+		// Verify
 		status = sshServer.execCommand(false, "ls /etc/kubernetes/manifests/kube-apiserver.yaml").getKey();
 		assertTrue("Cannot find /etc/kubernetes/manifests/kube-apiserver.yaml", status == 0);
 		
@@ -175,7 +199,7 @@ public class SmartKeyPlugin {
 		sshServer.execCommand("sudo chown $(id -u):$(id -g) $HOME/.kube/config");
 		sshServer.execCommand("export KUBECONFIG=$HOME/.kube/config");
 
-		Entry<Integer, List<String>> entry = sshServer.execCommand("sudo dpkg -i go/src/" + build_file);  //install plugin
+		Entry<Integer, List<String>> entry = sshServer.execCommand("sudo dpkg -i go/src/" + build_file);  //install plugin again
 		status = entry.getKey();
 		assertTrue("Debian Installation failed", status == 0);
 		//verify that following files got installed
@@ -188,6 +212,7 @@ public class SmartKeyPlugin {
 		status = sshServer.execCommand(false, "ls /etc/smartkey/smartkey.yaml").getKey();
 		assertTrue("Cannot find /etc/smartkey/smartkey.yaml", status == 0);
 		
+		//Verify that default command is running after plugin installation
 		status = sshServer.execCommand("kubectl get nodes").getKey();
 		log.debug("kubectl get nodes exit code: " + status);
 		assertTrue("Cannot read kubernetes nodes", status == 0);
@@ -302,7 +327,7 @@ public class SmartKeyPlugin {
 		List<String> lines = sshServer.execCommand("kubectl create secret generic " + secret_key + " -n default --from-literal=" 
 				+ secretKey + "=" + secretVal).getValue();
 		assertTrue("Cannot create a secret key", lastLine(lines).equals("secret/" + secret_key + " created"));
-		lines = sshServer.execCommand("kubectl get secrets").getValue();
+		lines = sshServer.execCommand("kubectl get secrets").getValue(); // show how many secrets exist (ex: passwords)
 		assertTrue("Cannot find a new secret key", lastLine(lines).contains(secret_key));
 		Entry<Integer, List<String>> entry = sshServer.execCommand("sudo ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt " + 
 										"--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt " + 
