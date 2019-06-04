@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,6 +22,13 @@ type DecryptResponse struct {
 	Kid   string
 	Plain string
 	Iv    string
+}
+
+/*KeyObject response from SmartKey for decrypt API Call*/
+type KeyObject struct {
+	// For objects which are not elliptic curves, this is the size in bits (not bytes) of the object. This field is not returned for elliptic curves.
+	KeySize int32  `json:"key_size,omitempty"`
+	ObjType string `json:"obj_type"`
 }
 
 /* This function calls actual SmartKey REST APIs on a SmartKey API endpoint. */
@@ -100,4 +108,63 @@ func decrypt(config map[string]string, cipher string) (string, error) {
 	var base64Input, _ = base64.StdEncoding.DecodeString(response.Plain)
 
 	return string(base64Input), nil
+}
+
+/* This is a method for calling authentication operation. */
+func auth(config map[string]string) (string, error) {
+	/* Convert plain text to base64 */
+	authURL := config["smartkeyURL"] + "/sys/v1/session/auth"
+
+	/* Call SmartKey auth */
+	req, err := http.NewRequest("POST", authURL, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Basic "+config["smartkeyApiKey"])
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	defer resp.Body.Close()
+
+	if err != nil || resp.StatusCode != 200 {
+		return "", errors.New("authentication failed")
+	}
+
+	return "", nil
+}
+
+/* This is a method for validating security object based on key uuid */
+func validateKey(config map[string]string) (string, error) {
+	/* Convert plain text to base64 */
+	authURL := config["smartkeyURL"] + "/crypto/v1/keys/" + config["encryptionKeyUuid"]
+
+	/* Call SmartKey get security object */
+	req, err := http.NewRequest("GET", authURL, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Basic "+config["smartkeyApiKey"])
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	defer resp.Body.Close()
+
+	if err != nil {
+		return "", errors.New("encryption key validation failed")
+	}
+
+	var keyResponse KeyObject
+	if err := json.NewDecoder(resp.Body).Decode(&keyResponse); err != nil {
+		return "", errors.New("encryption key validation failed")
+	}
+
+	if keyResponse.ObjType != "AES" || keyResponse.KeySize != 256 {
+		return "", errors.New("encryption key validation failed")
+	}
+
+	return "", nil
 }

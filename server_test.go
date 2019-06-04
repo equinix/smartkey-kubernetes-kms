@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/jarcoal/httpmock"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -45,9 +46,18 @@ func TestCleanSocketVersion(t *testing.T) {
 }
 
 func TestParseConfigFile_Positive_ValidFile(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("POST", "www.smartkey.io/sys/v1/session/auth",
+		httpmock.NewStringResponder(200, `{"expires_in": 0,"access_token": "","entity_id": ""}`))
+
+	httpmock.RegisterResponder("GET", "www.smartkey.io/crypto/v1/keys/uuid-1",
+		httpmock.NewStringResponder(200, `{"key_size": 256, "obj_type": "AES"}`))
+
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"rFvgbU6EygpLUObqFZxITg==\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -65,8 +75,8 @@ func TestParseConfigFile_Positive_ValidFile(t *testing.T) {
 
 func TestParseConfigFile_Negative_ApiKeyMissing(t *testing.T) {
 	configData := []byte("{\"" +
-		//"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		//"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"rFvgbU6EygpLUObqFZxITg==\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -84,8 +94,8 @@ func TestParseConfigFile_Negative_ApiKeyMissing(t *testing.T) {
 
 func TestParseConfigFile_Negative_UuidMissing(t *testing.T) {
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		//"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		//"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"rFvgbU6EygpLUObqFZxITg==\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -103,8 +113,8 @@ func TestParseConfigFile_Negative_UuidMissing(t *testing.T) {
 
 func TestParseConfigFile_Negative_IvMissing(t *testing.T) {
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		//"\"iv\": \"rFvgbU6EygpLUObqFZxITg==\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -122,8 +132,8 @@ func TestParseConfigFile_Negative_IvMissing(t *testing.T) {
 
 func TestParseConfigFile_Negative_SocketFileMissing(t *testing.T) {
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"rFvgbU6EygpLUObqFZxITg==\"," +
 		//"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -142,8 +152,8 @@ func TestParseConfigFile_Negative_SocketFileMissing(t *testing.T) {
 
 func TestParseConfigFile_Negative_SmartkeyURLMissing(t *testing.T) {
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"rFvgbU6EygpLUObqFZxITg==\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		//"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -160,9 +170,18 @@ func TestParseConfigFile_Negative_SmartkeyURLMissing(t *testing.T) {
 }
 
 func TestParseConfigFile_Negative_ApiKeyInvalid(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("POST", "www.smartkey.io/sys/v1/session/auth",
+		httpmock.NewStringResponder(400, `{"expires_in": 0,"access_token": "","entity_id": ""}`))
+
+	httpmock.RegisterResponder("GET", "www.smartkey.io/crypto/v1/keys/uuid-1",
+		httpmock.NewStringResponder(200, `{"key_size": 256, "obj_type": "AES"}`))
+
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"ApiKey\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"iv-1\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -178,10 +197,19 @@ func TestParseConfigFile_Negative_ApiKeyInvalid(t *testing.T) {
 	}
 }
 
-func TestParseConfigFile_Negative_KeyUuiInvalid(t *testing.T) {
+func TestParseConfigFile_Negative_KeyInvalid(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("POST", "www.smartkey.io/sys/v1/session/auth",
+		httpmock.NewStringResponder(200, `{"expires_in": 0,"access_token": "","entity_id": ""}`))
+
+	httpmock.RegisterResponder("GET", "www.smartkey.io/crypto/v1/keys/uuid-1",
+		httpmock.NewStringResponder(200, `{"key_size": 128, "obj_type": "AES"}`))
+
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"uuid\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"iv-1\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +
@@ -198,9 +226,18 @@ func TestParseConfigFile_Negative_KeyUuiInvalid(t *testing.T) {
 }
 
 func TestParseConfigFile_Negative_IvInvalid(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("POST", "www.smartkey.io/sys/v1/session/auth",
+		httpmock.NewStringResponder(200, `{"expires_in": 0,"access_token": "","entity_id": ""}`))
+
+	httpmock.RegisterResponder("GET", "www.smartkey.io/crypto/v1/keys/uuid-1",
+		httpmock.NewStringResponder(200, `{"key_size": 256, "obj_type": "AES"}`))
+
 	configData := []byte("{\"" +
-		"smartkeyApiKey\": \"dXNlcm5hbWU6cGFzc3dvcmQ=\"," +
-		"\"encryptionKeyUuid\": \"123e4567-e89b-4123-9123-123456780000\"," +
+		"smartkeyApiKey\": \"your-api-key\"," +
+		"\"encryptionKeyUuid\": \"uuid-1\"," +
 		"\"iv\": \"iv-1\"," +
 		"\"socketFile\": \"unix-sockfile-path\"," +
 		"\"smartkeyURL\": \"www.smartkey.io\"" +

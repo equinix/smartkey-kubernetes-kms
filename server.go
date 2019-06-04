@@ -10,8 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
-	"strings"
 	"syscall"
 
 	"golang.org/x/net/context"
@@ -119,14 +117,15 @@ func parseConfigFile(configFilePath string) (map[string]string, error) {
 	}
 	/* end of check mandatory fields are define in config file */
 
-	/* validate mandatory fields */
-	decodeKey, decodeKeyErr := base64.StdEncoding.DecodeString(config["smartkeyApiKey"])
-	if decodeKeyErr != nil {
-		return nil, errors.New("property 'smartkeyApiKey' has an invalid format in config file " + configFilePath)
+	/* validate Api key and AES key */
+	_, err = auth(config)
+	if err != nil {
+		return nil, errors.New("property 'smartkeyApiKey' is invalid in config file " + configFilePath)
 	}
-	credential := strings.Split(string(decodeKey), ":")
-	if (len(credential)) != 2 {
-		return nil, errors.New("property 'smartkeyApiKey' has an invalid format in config file " + configFilePath)
+
+	_, err = validateKey(config)
+	if err != nil {
+		return nil, errors.New("property 'encryptionKeyUuid' is invalid in config file " + configFilePath)
 	}
 
 	decodeIv, decodeIvErr := base64.StdEncoding.DecodeString(config["iv"])
@@ -137,11 +136,7 @@ func parseConfigFile(configFilePath string) (map[string]string, error) {
 		return nil, errors.New("property 'iv' has an invalid format in config file " + configFilePath)
 	}
 
-	rUuid := regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
-	if !rUuid.MatchString(config["encryptionKeyUuid"]) {
-		return nil, errors.New("property 'encryptionKeyUuid' has an invalid format in config file " + configFilePath)
-	}
-	/* end of validate mandatory fields */
+	/* end of Api key and AES key */
 
 	return config, nil
 }
