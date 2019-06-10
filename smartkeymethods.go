@@ -126,11 +126,11 @@ func auth(config map[string]string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	defer resp.Body.Close()
-
 	if err != nil || resp.StatusCode != 200 {
 		return "", errors.New("authentication failed")
 	}
+
+	defer resp.Body.Close()
 
 	return "", nil
 }
@@ -151,11 +151,11 @@ func validateKey(config map[string]string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	defer resp.Body.Close()
-
 	if err != nil {
 		return "", errors.New("encryption key validation failed")
 	}
+
+	defer resp.Body.Close()
 
 	var keyResponse KeyObject
 	if err := json.NewDecoder(resp.Body).Decode(&keyResponse); err != nil {
