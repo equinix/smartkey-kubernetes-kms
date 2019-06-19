@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -75,7 +76,7 @@ func parseCmd() (CommandArgs, error) {
 	return cmdArgs, nil
 }
 
-/* parseConfigFile read file from given path and create dicttionary with properties defined */
+/* parseConfigFile read file from given path and create dictionary with properties defined */
 func parseConfigFile(configFilePath string) (map[string]string, error) {
 	file, err := os.Open(configFilePath)
 	var config map[string]string
@@ -115,6 +116,27 @@ func parseConfigFile(configFilePath string) (map[string]string, error) {
 		return nil, errors.New("property 'smartkeyURL' missing in config file " + configFilePath)
 	}
 	/* end of check mandatory fields are define in config file */
+
+	/* validate Api key and AES key */
+	_, err = auth(config)
+	if err != nil {
+		return nil, errors.New("property 'smartkeyApiKey' is invalid in config file " + configFilePath)
+	}
+
+	_, err = validateKey(config)
+	if err != nil {
+		return nil, errors.New("property 'encryptionKeyUuid' is invalid in config file " + configFilePath)
+	}
+
+	decodeIv, decodeIvErr := base64.StdEncoding.DecodeString(config["iv"])
+	if decodeIvErr != nil {
+		return nil, errors.New("property 'iv' has an invalid format in config file " + configFilePath)
+	}
+	if (len(decodeIv)) != 16 {
+		return nil, errors.New("property 'iv' has an invalid format in config file " + configFilePath)
+	}
+
+	/* end of Api key and AES key */
 
 	return config, nil
 }
