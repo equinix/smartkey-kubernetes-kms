@@ -51,7 +51,16 @@ Instead of building code manually  (as mentioned in **Getting started (Developer
 		sudo dpkg -i smartkey-kmsplugin_1.0-1_amd64.deb
   - The above command will only install the plugin binary in your machine but will not start it.
   - **Note**: We will need to do configure our config files before starting service.
-  - Update the configuration at "/etc/smartkey/smartkey-grpc.conf".   
+  - Update the configuration at "/etc/smartkey/smartkey-grpc.conf". 
+  
+    Equinix Smartkey URLs:
+    
+    - North America: https://amer.smartkey.io/
+    - European Union: https://eu.smartkey.io/
+    - United Kingdom: https://uk.smartkey.io/
+    - Asia Pacific: https://apac.smartkey.io/
+    - Australia: https://au.smartkey.io/
+    
 
 	**Sample "smartkey-grpc.conf" file**
 
